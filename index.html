@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Pharmacist Recruitment Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4DB0C3; /* Primary brand color */
+            color: black;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 20px;
+            color: #EB8F1E; /* Secondary brand color */
+        }
+        h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        input[type="number"] {
+            width: 70px;
+        }
+        button {
+            background-color: #4DB0C3; /* Primary brand color */
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3a8a99; /* Darker shade of primary */
+        }
+        button.secondary {
+            background-color: #EB8F1E; /* Secondary brand color */
+            color: black;
+        }
+        button.secondary:hover {
+            background-color: #c87818; /* Darker shade of secondary */
+        }
+        button.danger {
+            background-color: #d81e05;
+        }
+        button.danger:hover {
+            background-color: #a51704;
+        }
+        button.outline {
+            background-color: transparent;
+            color: #4DB0C3; /* Primary brand color */
+            border: 1px solid #4DB0C3;
+        }
+        button.outline:hover {
+            background-color: #eaf7fa; /* Light shade of primary */
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            border-bottom: 2px solid #EB8F1E; /* Secondary brand color */
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+        }
+        tr.shortlisted {
+            background-color: #e6f7ea;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-col {
+            flex-direction: column;
+        }
+        .justify-between {
+            justify-content: space-between;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .gap-2 {
+            gap: 10px;
+        }
+        .gap-4 {
+            gap: 20px;
+        }
+        .mb-2 {
+            margin-bottom: 10px;
+        }
+        .mb-4 {
+            margin-bottom: 20px;
+        }
+        .p-2 {
+            padding: 10px;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .font-bold {
+            font-weight: bold;
+        }
+        .text-green {
+            color: #00703c;
+        }
+        .text-red {
+            color: #d81e05;
+        }
+        .bg-green-light {
+            background-color: #e6f7ea;
+        }
+        .bg-red-light {
+            background-color: #fbebe8;
+        }
+        .border-green {
+            border-left: 4px solid #00703c;
+        }
+        .border-red {
+            border-left: 4px solid #d81e05;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: 5px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .compare-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .score-breakdown {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .progress-bar {
+            height: 10px;
+            background-color: #e1e1e1;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #4DB0C3; /* Primary brand color */
+        }
+        .compliance-check {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .compliance-icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        .candidate-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+        .hidden {
+            display: none;
+        }
+        #pdfExport {
+            padding: 20px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Clinical Pharmacist Recruitment Tool</h1>
+            <p>A5556-25-0007 - Maidenhead Primary Care Network</p>
+            <div style="position: absolute; top: 20px; right: 20px; font-weight: bold; font-size: 24px;">MPCN</div>
+        </div>
+
+        <div class="card">
+            <h2>Job Requirements</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h3>Essential Requirements:</h3>
+                    <ul>
+                        <li>GPhC Registration</li>
+                        <li>MPharm or equivalent</li>
+                        <li>Minimum 2 years post qualification experience</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Desirable Criteria:</h3>
+                    <ul>
+                        <li>Independent Prescriber qualification</li>
+                        <li>CPPE Primary Care Pathway completion</li>
+                        <li>Royal Pharmaceutical Society membership</li>
+                        <li>Primary care experience</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div>
+                <div class="card">
+                    <h2>Assessment Criteria</h2>
+                    
+                    <div class="mb-4">
+                        <h3>Qualification Weights</h3>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <label>GPhC Registration</label>
+                                <input type="number" id="weight-registration" min="0" value="10">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label>MPharm</label>
+                                <input type="number" id="weight-mpharm" min="0" value="10">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label>OSPAP</label>
+                                <input type="number" id="weight-ospap" min="0" value="5">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label>Independent Prescriber</label>
+                                <input type="number" id="weight-prescriber" min="0" value="8">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label>CPPE Complete</label>
+                                <input type="number" id="weight-cppe" min="0" value="8">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label>RPS Membership</label>
+                                <input type="number" id="weight-rps" min="0" value="3">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3>Experience Weights</h3>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <label>Per Year Experience</label>
+                                <input type="number" id="weight-years" min="0" value="2">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label>Primary Care</label>
+                                <input type="number" id="weight-primary" min="0" value="10">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label>Community</label>
+                                <input type="number" id="weight-community" min="0" value="5">
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <label>Hospital</label>
+                                <input type="number" id="weight-hospital" min="0" value="5">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h3>Filter Candidates</h3>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <label>Minimum Years Experience</label>
+                                <input type="number" id="filter-min-years" min="0" value="0">
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="filter-primary" class="mr-2">
+                                <label for="filter-primary">Primary Care Experience</label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="filter-prescriber" class="mr-2">
+                                <label for="filter-prescriber">Independent Prescriber</label>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="filter-cppe" class="mr-2">
+                                <label for="filter-cppe">CPPE Completed</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3>Actions</h3>
+                        <div class="flex gap-2">
+                            <button id="btn-export-pdf">Export Shortlist to PDF</button>
+                            <button id="btn-save-data" class="secondary">Save Data</button>
+                            <button id="btn-load-data" class="outline">Load Data</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2>Candidate Comparison</h2>
+                    <p>Select candidates to compare them side by side.</p>
+                    <button id="btn-open-comparison" class="secondary">Compare Shortlisted Candidates</button>
+                </div>
+            </div>
+            
+            <div>
+                <div class="card">
+                    <h2>Candidate Assessment</h2>
+                    
+                    <div class="flex justify-between items-center mb-4">
+                        <input type="text" id="search-query" placeholder="Search by candidate ID..." style="width: 250px;">
+                        
+                        <div class="flex items-center gap-2">
+                            <label for="sort-by">Sort by:</label>
+                            <select id="sort-by">
+                                <option value="score">Score (High to Low)</option>
+                                <option value="id">Reference ID</option>
+                                <option value="experience">Experience (Years)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab active" data-tab="all">All Candidates</div>
+                        <div class="tab" data-tab="shortlisted">Shortlisted</div>
+                    </div>
+                    
+                    <div id="candidates-container">
+                        <table id="candidates-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 30px;"><input type="checkbox" id="select-all"></th>
+                                    <th style="width: 120px;">ID</th>
+                                    <th>Name/Contact</th>
+                                    <th>Status</th>
+                                    <th>Compliance</th>
+                                    <th>Qualifications</th>
+                                    <th>Experience</th>
+                                    <th>Key Skills</th>
+                                    <th style="width: 80px;" class="text-right">Score</th>
+                                    <th style="width: 180px;" class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="candidates-tbody"></tbody>
+                        </table>
+                        
+                        <div id="no-candidates" class="text-center p-2 hidden">
+                            No candidates match your current filters.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes Modal -->
+    <div id="notes-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Candidate Notes - <span id="notes-candidate-id"></span></h2>
+            <textarea id="notes-content" style="width: 100%; height: 200px; margin: 15px 0; padding: 10px;" placeholder="Add notes about this candidate..."></textarea>
+            <div class="flex justify-between">
+                <button id="btn-close-notes" class="outline">Close</button>
+                <button id="btn-save-notes">Save Notes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Breakdown Modal -->
+    <div id="breakdown-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Score Breakdown - <span id="breakdown-candidate-id"></span></h2>
+            
+            <div class="flex gap-4 mb-4">
+                <div style="flex: 1;">
+                    <h3>Qualifications</h3>
+                    <div id="qualifications-breakdown"></div>
+                </div>
+                <div style="flex: 1;">
+                    <h3>Experience</h3>
+                    <div id="experience-breakdown"></div>
+                </div>
+            </div>
+            
+            <div class="chart-container mb-4">
+                <canvas id="score-chart"></canvas>
+            </div>
+
+            <div class="text-right">
+                <button id="btn-close-breakdown">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Modal -->
+    <div id="comparison-modal" class="modal hidden">
+        <div class="modal-content" style="width: 90%; max-width: 1200px;">
+            <h2>Candidate Comparison</h2>
+            
+            <div id="comparison-candidates" class="compare-grid mb-4"></div>
+            
+            <div class="chart-container mb-4">
+                <canvas id="comparison-chart"></canvas>
+            </div>
+            
+            <div class="text-right">
+                <button id="btn-close-comparison">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden div for PDF export -->
+    <div id="pdfExport" class="hidden">
+        <h1>Shortlisted Candidates - Clinical Pharmacist Position</h1>
+        <p>A5556-25-0007 - Maidenhead Primary Care Network</p>
+        <table id="pdf-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Current Employer</th>
+                    <th>Status</th>
+                    <th>Qualifications</th>
+                    <th>Experience</th>
+                    <th>Skills</th>
+                    <th>Score</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody id="pdf-tbody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // Sample candidate data from the job application forms
+        const candidatesData = [
+            { 
+                id: "AR-250323-96513", 
+                name: "John Smith",
+                email: "j.smith@example.com",
+                phone: "07700 900123",
+                currentEmployer: "London Community Pharmacy",
+                status: "Initial Review",
+                qualifications: {
+                    registration: true,
+                    mpharm: true,
+                    ospap: true,
+                    cppe: false,
+                    ip: false,
+                    rps: false
+                },
+                experience: {
+                    years: 3,
+                    primaryCare: true,
+                    community: true,
+                    hospital: true
+                },
+                skills: [
+                    "Clinical prescribing", 
+                    "Patient consultation", 
+                    "Medication review"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            },
+            { 
+                id: "AR-250325-02481", 
+                name: "Sarah Johnson",
+                email: "s.johnson@example.com",
+                phone: "07700 900456",
+                currentEmployer: "St. Thomas' Hospital",
+                status: "Initial Review",
+                qualifications: {
+                    registration: true,
+                    mpharm: true,
+                    ospap: false,
+                    cppe: false,
+                    ip: false,
+                    rps: false
+                },
+                experience: {
+                    years: 6,
+                    primaryCare: true,
+                    community: true,
+                    hospital: true
+                },
+                skills: [
+                    "Medication reconciliation", 
+                    "Telephone consultations", 
+                    "Medication management"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            },
+            { 
+                id: "AR-250327-10505", 
+                qualifications: {
+                    registration: true,
+                    mpharm: true,
+                    ospap: false,
+                    cppe: false,
+                    ip: false,
+                    rps: false
+                },
+                experience: {
+                    years: 1,
+                    primaryCare: true,
+                    community: true,
+                    hospital: true
+                },
+                skills: [
+                    "Patient consultation", 
+                    "Medication review", 
+                    "Blood pressure monitoring"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            },
+            { 
+                id: "AR-250310-53081", 
+                qualifications: {
+                    registration: true,
+                    mpharm: true,
+                    ospap: false,
+                    cppe: false,
+                    ip: false,
+                    rps: false
+                },
+                experience: {
+                    years: 1,
+                    primaryCare: false,
+                    community: true,
+                    hospital: false
+                },
+                skills: [
+                    "Over-the-counter advice", 
+                    "Patient communication", 
+                    "Prescription management"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            },
+            { 
+                id: "AR-250308-48979", 
+                qualifications: {
+                    registration: true,
+                    mpharm: true,
+                    ospap: false,
+                    cppe: false,
+                    ip: false,
+                    rps: false
+                },
+                experience: {
+                    years: 1,
+                    primaryCare: false,
+                    community: false,
+                    hospital: true
+                },
+                skills: [
+                    "Medication reconciliation", 
+                    "Patient consultation", 
+                    "Clinical pharmacy"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            },
+            { 
+                id: "AR-250325-03362", 
+                qualifications: {
+                    registration: true,
+                    mpharm: false,
+                    ospap: false,
+                    cppe: false,
+                    ip: false,
+                    rps: false
+                },
+                experience: {
+                    years: 10,
+                    primaryCare: false,
+                    community: true,
+                    hospital: true
+                },
+                skills: [
+                    "Patient counselling", 
+                    "Prescription management", 
+                    "Customer service"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            },
+            { 
+                id: "AR-250321-91539", 
+                qualifications: {
+                    registration: true,
+                    mpharm: false,
+                    ospap: true,
+                    cppe: false,
+                    ip: false,
+                    rps: false
+                },
+                experience: {
+                    years: 0,
+                    primaryCare: false,
+                    community: false,
+                    hospital: true
+                },
+                skills: [
+                    "Dispensing", 
+                    "Patient counselling", 
+                    "Clinical skills"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            },
+            { 
+                id: "AR-250320-86562", 
+                qualifications: {
+                    registration: true,
+                    mpharm: true,
+                    ospap: false,
+                    cppe: false,
+                    ip: true,
+                    rps: true
+                },
+                experience: {
+                    years: 3,
+                    primaryCare: false,
+                    community: true,
+                    hospital: false
+                },
+                skills: [
+                    "Inventory management", 
+                    "Patient counselling", 
+                    "Medication review"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            },
+            { 
+                id: "AR-250328-14612", 
+                qualifications: {
+                    registration: true,
+                    mpharm: true,
+                    ospap: false,
+                    cppe: false,
+                    ip: false,
+                    rps: false
+                },
+                experience: {
+                    years: 1,
+                    primaryCare: false,
+                    community: true,
+                    hospital: false
+                },
+                skills: [
+                    "Patient consultation", 
+                    "Prescription checking", 
+                    "Clinical decision making"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            },
+            { 
+                id: "AR-250327-12079", 
+                qualifications: {
+                    registration: true,
+                    mpharm: true,
+                    ospap: false,
+                    cppe: false,
+                    ip: false,
+                    rps: false
+                },
+                experience: {
+                    years: 2,
+                    primaryCare: true,
+                    community: true,
+                    hospital: true
+                },
+                skills: [
+                    "Medication reviews", 
+                    "Structured medication review", 
+                    "Medication reconciliation"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            },
+            { 
+                id: "AR-250318-80770", 
+                qualifications: {
+                    registration: true,
+                    mpharm: false,
+                    ospap: true,
+                    cppe: false,
+                    ip: true,
+                    rps: false
+                },
+                experience: {
+                    years: 6,
+                    primaryCare: false,
+                    community: true,
+                    hospital: true
+                },
+                skills: [
+                    "Medicine reconciliation", 
+                    "Clinical checking", 
+                    "Multidisciplinary team work"
+                ],
+                score: 0,
+                notes: "",
+                shortlisted: false,
+                selected: false
+            }
+        ];
+
+        // Add contact and status info to other candidates
+        for (let i = 2; i < candidatesData.length; i++) {
+            if (!candidatesData[i].name) {
+                candidatesData[i].name = `Candidate ${i+1}`;
+                candidatesData[i].email = `candidate${i+1}@example.com`;
+                candidatesData[i].phone = `0770090${i.toString().padStart(4, '0')}`;
+                candidatesData[i].currentEmployer = ["Boots UK", "Lloyds Pharmacy", "Well Pharmacy", "Superdrug", "Rowlands Pharmacy", "Hampshire Hospital", "Chelsea & Westminster", "Royal Free Hospital", "North PCN", "South PCN"][i % 10];
+                candidatesData[i].status = "Initial Review";
+            }
+        }
+        
+        let candidates = [...candidatesData];
+        let activeTab = "all";
+        let criteriaWeights = {
+            registration: 10,
+            mpharm: 10,
+            ospap: 5,
+            prescriber: 8,
+            cppe: 8,
+            rps: 3,
+            yearsExperience: 2,
+            primaryCare: 10,
+            community: 5,
+            hospital: 5
+        };
+        let filterCriteria = {
+            minYears: 0,
+            primaryCare: false,
+            prescriber: false,
+            cppe: false
+        };
+        let sortCriteria = "score";
+        let searchQuery = "";
+        let selectedCandidate = null;
+        let breakdownCandidate = null;
+        let scoreChart = null;
+        let comparisonChart = null;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeWeightInputs();
+            initializeFilterInputs();
+            initializeEventListeners();
+            updateScores();
+            renderCandidates();
+        });
+
+        function initializeWeightInputs() {
+            document.getElementById('weight-registration').value = criteriaWeights.registration;
+            document.getElementById('weight-mpharm').value = criteriaWeights.mpharm;
+            document.getElementById('weight-ospap').value = criteriaWeights.ospap;
+            document.getElementById('weight-prescriber').value = criteriaWeights.prescriber;
+            document.getElementById('weight-cppe').value = criteriaWeights.cppe;
+            document.getElementById('weight-rps').value = criteriaWeights.rps;
+            document.getElementById('weight-years').value = criteriaWeights.yearsExperience;
+            document.getElementById('weight-primary').value = criteriaWeights.primaryCare;
+            document.getElementById('weight-community').value = criteriaWeights.community;
+            document.getElementById('weight-hospital').value = criteriaWeights.hospital;
+        }
+
+        function initializeFilterInputs() {
+            document.getElementById('filter-min-years').value = filterCriteria.minYears;
+            document.getElementById('filter-primary').checked = filterCriteria.primaryCare;
+            document.getElementById('filter-prescriber').checked = filterCriteria.prescriber;
+            document.getElementById('filter-cppe').checked = filterCriteria.cppe;
+        }
+
+        function initializeEventListeners() {
+            // Weight inputs
+            document.getElementById('weight-registration').addEventListener('change', updateWeights);
+            document.getElementById('weight-mpharm').addEventListener('change', updateWeights);
+            document.getElementById('weight-ospap').addEventListener('change', updateWeights);
+            document.getElementById('weight-prescriber').addEventListener('change', updateWeights);
+            document.getElementById('weight-cppe').addEventListener('change', updateWeights);
+            document.getElementById('weight-rps').addEventListener('change', updateWeights);
+            document.getElementById('weight-years').addEventListener('change', updateWeights);
+            document.getElementById('weight-primary').addEventListener('change', updateWeights);
+            document.getElementById('weight-community').addEventListener('change', updateWeights);
+            document.getElementById('weight-hospital').addEventListener('change', updateWeights);
+
+            // Filter inputs
+            document.getElementById('filter-min-years').addEventListener('change', updateFilters);
+            document.getElementById('filter-primary').addEventListener('change', updateFilters);
+            document.getElementById('filter-prescriber').addEventListener('change', updateFilters);
+            document.getElementById('filter-cppe').addEventListener('change', updateFilters);
+
+            // Search and sort
+            document.getElementById('search-query').addEventListener('input', (e) => {
+                searchQuery = e.target.value;
+                renderCandidates();
+            });
+            document.getElementById('sort-by').addEventListener('change', (e) => {
+                sortCriteria = e.target.value;
+                renderCandidates();
+            });
+
+            // Tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    activeTab = tab.dataset.tab;
+                    renderCandidates();
+                });
+            });
+
+            // Notes Modal
+            document.getElementById('btn-close-notes').addEventListener('click', () => {
+                document.getElementById('notes-modal').classList.add('hidden');
+            });
+            document.getElementById('btn-save-notes').addEventListener('click', saveNotes);
+
+            // Score Breakdown Modal
+            document.getElementById('btn-close-breakdown').addEventListener('click', () => {
+                document.getElementById('breakdown-modal').classList.add('hidden');
+            });
+
+            // Comparison Modal
+            document.getElementById('btn-open-comparison').addEventListener('click', openComparisonModal);
+            document.getElementById('btn-close-comparison').addEventListener('click', () => {
+                document.getElementById('comparison-modal').classList.add('hidden');
+            });
+
+            // Select all checkbox
+            document.getElementById('select-all').addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                candidates.forEach(candidate => {
+                    if (isVisible(candidate)) {
+                        candidate.selected = isChecked;
+                    }
+                });
+                renderCandidates();
+            });
+
+            // PDF Export
+            document.getElementById('btn-export-pdf').addEventListener('click', exportToPDF);
+
+            // Save and load data
+            document.getElementById('btn-save-data').addEventListener('click', saveData);
+            document.getElementById('btn-load-data').addEventListener('click', loadData);
+        }
+
+        function updateWeights() {
+            criteriaWeights.registration = parseInt(document.getElementById('weight-registration').value) || 0;
+            criteriaWeights.mpharm = parseInt(document.getElementById('weight-mpharm').value) || 0;
+            criteriaWeights.ospap = parseInt(document.getElementById('weight-ospap').value) || 0;
+            criteriaWeights.prescriber = parseInt(document.getElementById('weight-prescriber').value) || 0;
+            criteriaWeights.cppe = parseInt(document.getElementById('weight-cppe').value) || 0;
+            criteriaWeights.rps = parseInt(document.getElementById('weight-rps').value) || 0;
+            criteriaWeights.yearsExperience = parseInt(document.getElementById('weight-years').value) || 0;
+            criteriaWeights.primaryCare = parseInt(document.getElementById('weight-primary').value) || 0;
+            criteriaWeights.community = parseInt(document.getElementById('weight-community').value) || 0;
+            criteriaWeights.hospital = parseInt(document.getElementById('weight-hospital').value) || 0;
+            
+            updateScores();
+            renderCandidates();
+        }
+
+        function updateFilters() {
+            filterCriteria.minYears = parseInt(document.getElementById('filter-min-years').value) || 0;
+            filterCriteria.primaryCare = document.getElementById('filter-primary').checked;
+            filterCriteria.prescriber = document.getElementById('filter-prescriber').checked;
+            filterCriteria.cppe = document.getElementById('filter-cppe').checked;
+            
+            renderCandidates();
+        }
+
+        function updateScores() {
+            candidates.forEach(candidate => {
+                // Calculate qualifications score
+                let qualScore = 0;
+                if (candidate.qualifications.registration) qualScore += criteriaWeights.registration;
+                if (candidate.qualifications.mpharm) qualScore += criteriaWeights.mpharm;
+                if (candidate.qualifications.ospap) qualScore += criteriaWeights.ospap;
+                if (candidate.qualifications.ip) qualScore += criteriaWeights.prescriber;
+                if (candidate.qualifications.cppe) qualScore += criteriaWeights.cppe;
+                if (candidate.qualifications.rps) qualScore += criteriaWeights.rps;
+                
+                // Calculate experience score
+                let expScore = 0;
+                expScore += candidate.experience.years * criteriaWeights.yearsExperience;
+                if (candidate.experience.primaryCare) expScore += criteriaWeights.primaryCare;
+                if (candidate.experience.community) expScore += criteriaWeights.community;
+                if (candidate.experience.hospital) expScore += criteriaWeights.hospital;
+                
+                // Total score
+                candidate.score = qualScore + expScore;
+            });
+        }
+
+        function isVisible(candidate) {
+            // Apply tab filter
+            if (activeTab === "shortlisted" && !candidate.shortlisted) {
+                return false;
+            }
+            
+            // Apply search filter
+            if (searchQuery && !candidate.id.toLowerCase().includes(searchQuery.toLowerCase())) {
+                return false;
+            }
+            
+            // Apply custom filters
+            if (candidate.experience.years < filterCriteria.minYears) {
+                return false;
+            }
+            
+            if (filterCriteria.primaryCare && !candidate.experience.primaryCare) {
+                return false;
+            }
+            
+            if (filterCriteria.prescriber && !candidate.qualifications.ip) {
+                return false;
+            }
+            
+            if (filterCriteria.cppe && !candidate.qualifications.cppe) {
+                return false;
+            }
+            
+            return true;
+        }
+
+        function renderCandidates() {
+            const tbody = document.getElementById('candidates-tbody');
+            tbody.innerHTML = '';
+            
+            // Sort candidates
+            let sortedCandidates = [...candidates];
+            if (sortCriteria === "score") {
+                sortedCandidates.sort((a, b) => b.score - a.score);
+            } else if (sortCriteria === "id") {
+                sortedCandidates.sort((a, b) => a.id.localeCompare(b.id));
+            } else if (sortCriteria === "experience") {
+                sortedCandidates.sort((a, b) => b.experience.years - a.experience.years);
+            }
+            
+            // Filter and render candidates
+            let visibleCount = 0;
+            
+            sortedCandidates.forEach(candidate => {
+                if (isVisible(candidate)) {
+                    visibleCount++;
+                    const row = document.createElement('tr');
+                    if (candidate.shortlisted) {
+                        row.classList.add('shortlisted');
+                    }
+                    
+                    // Checkbox column
+                    const selectCell = document.createElement('td');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = candidate.selected;
+                    checkbox.addEventListener('change', () => {
+                        candidate.selected = checkbox.checked;
+                    });
+                    selectCell.appendChild(checkbox);
+                    row.appendChild(selectCell);
+                    
+                    // ID column
+                    const idCell = document.createElement('td');
+                    idCell.textContent = candidate.id;
+                    row.appendChild(idCell);
+                    
+                    // Name/Contact column
+                    const contactCell = document.createElement('td');
+                    const contactInfo = document.createElement('div');
+                    contactInfo.innerHTML = `<strong>${candidate.name || 'Name not provided'}</strong><br>`;
+                    if (candidate.email) contactInfo.innerHTML += `${candidate.email}<br>`;
+                    if (candidate.phone) contactInfo.innerHTML += `${candidate.phone}<br>`;
+                    if (candidate.currentEmployer) contactInfo.innerHTML += `<em>${candidate.currentEmployer}</em>`;
+                    contactCell.appendChild(contactInfo);
+                    row.appendChild(contactCell);
+                    
+                    // Status column
+                    const statusCell = document.createElement('td');
+                    const statusSelect = document.createElement('select');
+                    statusSelect.className = 'status-select';
+                    
+                    const statusOptions = [
+                        'Initial Review', 'Shortlisted', 'Interview Scheduled', 
+                        'Interview Completed', 'References Checked', 'Offer Made', 'Hired', 'Rejected'
+                    ];
+                    
+                    statusOptions.forEach(option => {
+                        const optElement = document.createElement('option');
+                        optElement.value = option;
+                        optElement.textContent = option;
+                        optElement.selected = (candidate.status === option);
+                        statusSelect.appendChild(optElement);
+                    });
+                    
+                    statusSelect.addEventListener('change', () => {
+                        candidate.status = statusSelect.value;
+                        // Auto-shortlist when status is changed to "Shortlisted"
+                        if (statusSelect.value === 'Shortlisted' && !candidate.shortlisted) {
+                            candidate.shortlisted = true;
+                            renderCandidates();
+                        }
+                        // Remove from shortlist when status is "Rejected"
+                        if (statusSelect.value === 'Rejected' && candidate.shortlisted) {
+                            candidate.shortlisted = false;
+                            renderCandidates();
+                        }
+                    });
+                    
+                    statusCell.appendChild(statusSelect);
+                    row.appendChild(statusCell);
+                    
+                    // Compliance column
+                    const complianceCell = document.createElement('td');
+                    const complianceText = document.createElement('div');
+                    
+                    if (candidate.qualifications.registration && 
+                        (candidate.qualifications.mpharm || candidate.qualifications.ospap) && 
+                        candidate.experience.years >= 2) {
+                        complianceText.innerHTML = '<span class="text-green">✓ Meets essential criteria</span>';
+                    } else {
+                        complianceText.innerHTML = '<span class="text-red">✗ Does not meet essential criteria</span>';
+                    }
+                    
+                    complianceCell.appendChild(complianceText);
+                    row.appendChild(complianceCell);
+                    
+                    // Qualifications column
+                    const qualCell = document.createElement('td');
+                    const qualList = document.createElement('ul');
+                    qualList.style.margin = '0';
+                    qualList.style.paddingLeft = '20px';
+                    
+                    if (candidate.qualifications.registration) qualList.innerHTML += '<li>GPhC Registration</li>';
+                    if (candidate.qualifications.mpharm) qualList.innerHTML += '<li>MPharm</li>';
+                    if (candidate.qualifications.ospap) qualList.innerHTML += '<li>OSPAP</li>';
+                    if (candidate.qualifications.ip) qualList.innerHTML += '<li>Independent Prescriber</li>';
+                    if (candidate.qualifications.cppe) qualList.innerHTML += '<li>CPPE Completed</li>';
+                    if (candidate.qualifications.rps) qualList.innerHTML += '<li>RPS Member</li>';
+                    
+                    qualCell.appendChild(qualList);
+                    row.appendChild(qualCell);
+                    
+                    // Experience column
+                    const expCell = document.createElement('td');
+                    expCell.innerHTML = `<strong>${candidate.experience.years} years</strong><br>`;
+                    
+                    const expList = document.createElement('ul');
+                    expList.style.margin = '5px 0 0 0';
+                    expList.style.paddingLeft = '20px';
+                    
+                    if (candidate.experience.primaryCare) expList.innerHTML += '<li>Primary Care</li>';
+                    if (candidate.experience.community) expList.innerHTML += '<li>Community</li>';
+                    if (candidate.experience.hospital) expList.innerHTML += '<li>Hospital</li>';
+                    
+                    expCell.appendChild(expList);
+                    row.appendChild(expCell);
+                    
+                    // Skills column
+                    const skillsCell = document.createElement('td');
+                    const skillsList = document.createElement('ul');
+                    skillsList.style.margin = '0';
+                    skillsList.style.paddingLeft = '20px';
+                    
+                    candidate.skills.forEach(skill => {
+                        skillsList.innerHTML += `<li>${skill}</li>`;
+                    });
+                    
+                    skillsCell.appendChild(skillsList);
+                    row.appendChild(skillsCell);
+                    
+                    // Score column
+                    const scoreCell = document.createElement('td');
+                    scoreCell.className = 'text-right font-bold';
+                    scoreCell.textContent = candidate.score;
+                    row.appendChild(scoreCell);
+                    
+                    // Actions column
+                    const actionsCell = document.createElement('td');
+                    actionsCell.className = 'text-center';
+                    
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'flex justify-between';
+                    
+                    // View score breakdown button
+                    const breakdownBtn = document.createElement('button');
+                    breakdownBtn.className = 'outline';
+                    breakdownBtn.textContent = 'Score';
+                    breakdownBtn.addEventListener('click', () => showScoreBreakdown(candidate));
+                    actionsDiv.appendChild(breakdownBtn);
+                    
+                    // Notes button
+                    const notesBtn = document.createElement('button');
+                    notesBtn.className = 'secondary';
+                    notesBtn.textContent = 'Notes';
+                    notesBtn.addEventListener('click', () => openNotesModal(candidate));
+                    actionsDiv.appendChild(notesBtn);
+                    
+                    // Shortlist button
+                    const shortlistBtn = document.createElement('button');
+                    if (candidate.shortlisted) {
+                        shortlistBtn.className = 'danger';
+                        shortlistBtn.textContent = 'Remove';
+                        shortlistBtn.addEventListener('click', () => {
+                            candidate.shortlisted = false;
+                            if (candidate.status === 'Shortlisted') {
+                                candidate.status = 'Initial Review';
+                            }
+                            renderCandidates();
+                        });
+                    } else {
+                        shortlistBtn.textContent = 'Shortlist';
+                        shortlistBtn.addEventListener('click', () => {
+                            candidate.shortlisted = true;
+                            candidate.status = 'Shortlisted';
+                            renderCandidates();
+                        });
+                    }
+                    actionsDiv.appendChild(shortlistBtn);
+                    
+                    actionsCell.appendChild(actionsDiv);
+                    row.appendChild(actionsCell);
+                    
+                    tbody.appendChild(row);
+                }
+            });
+            
+            // Show/hide "no candidates" message
+            const noResultsMessage = document.getElementById('no-candidates');
+            if (visibleCount === 0) {
+                noResultsMessage.classList.remove('hidden');
+            } else {
+                noResultsMessage.classList.add('hidden');
+            }
+            
+            // Update select all checkbox
+            const selectAllCheckbox = document.getElementById('select-all');
+            const visibleCandidates = candidates.filter(isVisible);
+            const allSelected = visibleCandidates.length > 0 && visibleCandidates.every(c => c.selected);
+            selectAllCheckbox.checked = allSelected;
+        }
+
+        function openNotesModal(candidate) {
+            selectedCandidate = candidate;
+            document.getElementById('notes-candidate-id').textContent = candidate.id;
+            document.getElementById('notes-content').value = candidate.notes;
+            document.getElementById('notes-modal').classList.remove('hidden');
+        }
+
+        function saveNotes() {
+            if (selectedCandidate) {
+                selectedCandidate.notes = document.getElementById('notes-content').value;
+                document.getElementById('notes-modal').classList.add('hidden');
+            }
+        }
+
+        function showScoreBreakdown(candidate) {
+            breakdownCandidate = candidate;
+            document.getElementById('breakdown-candidate-id').textContent = candidate.id;
+            
+            // Populate qualifications breakdown
+            const qualBreakdown = document.getElementById('qualifications-breakdown');
+            qualBreakdown.innerHTML = '';
+            
+            if (candidate.qualifications.registration) {
+                addScoreItem(qualBreakdown, 'GPhC Registration', criteriaWeights.registration);
+            }
+            if (candidate.qualifications.mpharm) {
+                addScoreItem(qualBreakdown, 'MPharm', criteriaWeights.mpharm);
+            }
+            if (candidate.qualifications.ospap) {
+                addScoreItem(qualBreakdown, 'OSPAP', criteriaWeights.ospap);
+            }
+            if (candidate.qualifications.ip) {
+                addScoreItem(qualBreakdown, 'Independent Prescriber', criteriaWeights.prescriber);
+            }
+            if (candidate.qualifications.cppe) {
+                addScoreItem(qualBreakdown, 'CPPE Complete', criteriaWeights.cppe);
+            }
+            if (candidate.qualifications.rps) {
+                addScoreItem(qualBreakdown, 'RPS Member', criteriaWeights.rps);
+            }
+            
+            // Populate experience breakdown
+            const expBreakdown = document.getElementById('experience-breakdown');
+            expBreakdown.innerHTML = '';
+            
+            addScoreItem(expBreakdown, `${candidate.experience.years} Years Experience`, candidate.experience.years * criteriaWeights.yearsExperience);
+            
+            if (candidate.experience.primaryCare) {
+                addScoreItem(expBreakdown, 'Primary Care Experience', criteriaWeights.primaryCare);
+            }
+            if (candidate.experience.community) {
+                addScoreItem(expBreakdown, 'Community Experience', criteriaWeights.community);
+            }
+            if (candidate.experience.hospital) {
+                addScoreItem(expBreakdown, 'Hospital Experience', criteriaWeights.hospital);
+            }
+            
+            // Create chart
+            renderScoreChart(candidate);
+            
+            document.getElementById('breakdown-modal').classList.remove('hidden');
+        }
+
+        function addScoreItem(container, label, score) {
+            const item = document.createElement('div');
+            item.className = 'score-breakdown';
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'flex justify-between';
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = label;
+            
+            const valueSpan = document.createElement('span');
+            valueSpan.className = 'font-bold';
+            valueSpan.textContent = score;
+            
+            labelDiv.appendChild(nameSpan);
+            labelDiv.appendChild(valueSpan);
+            
+            const progressBar = document.createElement('div');
+            progressBar.className = 'progress-bar';
+            
+            const maxScore = 20; // Arbitrary max for visualization
+            const width = Math.min(100, (score / maxScore) * 100);
+            
+            const progressFill = document.createElement('div');
+            progressFill.className = 'progress-fill';
+            progressFill.style.width = `${width}%`;
+            
+            progressBar.appendChild(progressFill);
+            
+            item.appendChild(labelDiv);
+            item.appendChild(progressBar);
+            container.appendChild(item);
+        }
+
+        function renderScoreChart(candidate) {
+            const ctx = document.getElementById('score-chart').getContext('2d');
+            
+            if (scoreChart) {
+                scoreChart.destroy();
+            }
+            
+            // Calculate category totals
+            let qualScore = 0;
+            if (candidate.qualifications.registration) qualScore += criteriaWeights.registration;
+            if (candidate.qualifications.mpharm) qualScore += criteriaWeights.mpharm;
+            if (candidate.qualifications.ospap) qualScore += criteriaWeights.ospap;
+            if (candidate.qualifications.ip) qualScore += criteriaWeights.prescriber;
+            if (candidate.qualifications.cppe) qualScore += criteriaWeights.cppe;
+            if (candidate.qualifications.rps) qualScore += criteriaWeights.rps;
+            
+            let experienceYearsScore = candidate.experience.years * criteriaWeights.yearsExperience;
+            
+            let experienceTypeScore = 0;
+            if (candidate.experience.primaryCare) experienceTypeScore += criteriaWeights.primaryCare;
+            if (candidate.experience.community) experienceTypeScore += criteriaWeights.community;
+            if (candidate.experience.hospital) experienceTypeScore += criteriaWeights.hospital;
+            
+            scoreChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Qualifications', 'Years Experience', 'Experience Type'],
+                    datasets: [{
+                        label: 'Score',
+                        data: [qualScore, experienceYearsScore, experienceTypeScore],
+                        backgroundColor: [
+                            'rgba(77, 176, 195, 0.7)', /* Primary: #4DB0C3 */
+                            'rgba(77, 176, 195, 0.5)',
+                            'rgba(77, 176, 195, 0.3)'
+                        ],
+                        borderColor: [
+                            'rgba(77, 176, 195, 1)',
+                            'rgba(77, 176, 195, 1)',
+                            'rgba(77, 176, 195, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Score'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Score Breakdown by Category'
+                        }
+                    }
+                }
+            });
+        }
+
+        function openComparisonModal() {
+            const shortlistedCandidates = candidates.filter(c => c.shortlisted);
+            
+            if (shortlistedCandidates.length < 2) {
+                alert('Please shortlist at least 2 candidates to compare.');
+                return;
+            }
+            
+            const comparisonContainer = document.getElementById('comparison-candidates');
+            comparisonContainer.innerHTML = '';
+            
+            // Create candidate cards
+            shortlistedCandidates.forEach(candidate => {
+                const card = document.createElement('div');
+                card.className = 'candidate-card';
+                
+                const header = document.createElement('h3');
+                header.textContent = candidate.id;
+                
+                const score = document.createElement('div');
+                score.className = 'font-bold text-center mb-2';
+                score.textContent = `Score: ${candidate.score}`;
+                
+                const content = document.createElement('div');
+                
+                // Qualifications
+                const qualTitle = document.createElement('div');
+                qualTitle.className = 'font-bold';
+                qualTitle.textContent = 'Qualifications:';
+                content.appendChild(qualTitle);
+                
+                const qualList = document.createElement('ul');
+                qualList.style.margin = '5px 0 10px 0';
+                qualList.style.paddingLeft = '20px';
+                
+                if (candidate.qualifications.registration) qualList.innerHTML += '<li>GPhC Registration</li>';
+                if (candidate.qualifications.mpharm) qualList.innerHTML += '<li>MPharm</li>';
+                if (candidate.qualifications.ospap) qualList.innerHTML += '<li>OSPAP</li>';
+                if (candidate.qualifications.ip) qualList.innerHTML += '<li>Independent Prescriber</li>';
+                if (candidate.qualifications.cppe) qualList.innerHTML += '<li>CPPE Completed</li>';
+                if (candidate.qualifications.rps) qualList.innerHTML += '<li>RPS Member</li>';
+                
+                content.appendChild(qualList);
+                
+                // Experience
+                const expTitle = document.createElement('div');
+                expTitle.className = 'font-bold';
+                expTitle.textContent = 'Experience:';
+                content.appendChild(expTitle);
+                
+                const expInfo = document.createElement('div');
+                expInfo.innerHTML = `<strong>${candidate.experience.years} years</strong><br>`;
+                content.appendChild(expInfo);
+                
+                const expList = document.createElement('ul');
+                expList.style.margin = '5px 0 10px 0';
+                expList.style.paddingLeft = '20px';
+                
+                if (candidate.experience.primaryCare) expList.innerHTML += '<li>Primary Care</li>';
+                if (candidate.experience.community) expList.innerHTML += '<li>Community</li>';
+                if (candidate.experience.hospital) expList.innerHTML += '<li>Hospital</li>';
+                
+                content.appendChild(expList);
+                
+                // Skills
+                const skillsTitle = document.createElement('div');
+                skillsTitle.className = 'font-bold';
+                skillsTitle.textContent = 'Skills:';
+                content.appendChild(skillsTitle);
+                
+                const skillsList = document.createElement('ul');
+                skillsList.style.margin = '5px 0 0 0';
+                skillsList.style.paddingLeft = '20px';
+                
+                candidate.skills.forEach(skill => {
+                    skillsList.innerHTML += `<li>${skill}</li>`;
+                });
+                
+                content.appendChild(skillsList);
+                
+                if (candidate.notes) {
+                    const notesTitle = document.createElement('div');
+                    notesTitle.className = 'font-bold mt-2';
+                    notesTitle.textContent = 'Notes:';
+                    content.appendChild(notesTitle);
+                    
+                    const notesText = document.createElement('div');
+                    notesText.style.margin = '5px 0 0 0';
+                    notesText.style.fontSize = '0.9em';
+                    notesText.textContent = candidate.notes;
+                    content.appendChild(notesText);
+                }
+                
+                card.appendChild(header);
+                card.appendChild(score);
+                card.appendChild(content);
+                
+                comparisonContainer.appendChild(card);
+            });
+            
+            // Create comparison chart
+            renderComparisonChart(shortlistedCandidates);
+            
+            document.getElementById('comparison-modal').classList.remove('hidden');
+        }
+
+        function renderComparisonChart(candidatesToCompare) {
+            const ctx = document.getElementById('comparison-chart').getContext('2d');
+            
+            if (comparisonChart) {
+                comparisonChart.destroy();
+            }
+            
+            const labels = candidatesToCompare.map(c => c.id);
+            const qualScores = candidatesToCompare.map(candidate => {
+                let score = 0;
+                if (candidate.qualifications.registration) score += criteriaWeights.registration;
+                if (candidate.qualifications.mpharm) score += criteriaWeights.mpharm;
+                if (candidate.qualifications.ospap) score += criteriaWeights.ospap;
+                if (candidate.qualifications.ip) score += criteriaWeights.prescriber;
+                if (candidate.qualifications.cppe) score += criteriaWeights.cppe;
+                if (candidate.qualifications.rps) score += criteriaWeights.rps;
+                return score;
+            });
+            
+            const expScores = candidatesToCompare.map(candidate => {
+                let score = candidate.experience.years * criteriaWeights.yearsExperience;
+                if (candidate.experience.primaryCare) score += criteriaWeights.primaryCare;
+                if (candidate.experience.community) score += criteriaWeights.community;
+                if (candidate.experience.hospital) score += criteriaWeights.hospital;
+                return score;
+            });
+            
+            comparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Qualification Score',
+                            data: qualScores,
+                            backgroundColor: 'rgba(77, 176, 195, 0.7)', /* Primary: #4DB0C3 */
+                            borderColor: 'rgba(77, 176, 195, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Experience Score',
+                            data: expScores,
+                            backgroundColor: 'rgba(235, 143, 30, 0.7)', /* Secondary: #EB8F1E */
+                            borderColor: 'rgba(235, 143, 30, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: false
+                        },
+                        y: {
+                            stacked: false,
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Score'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Candidate Score Comparison'
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportToPDF() {
+            const shortlisted = candidates.filter(c => c.shortlisted);
+            
+            if (shortlisted.length === 0) {
+                alert('No candidates have been shortlisted.');
+                return;
+            }
+            
+            // Populate the PDF table
+            const pdfTbody = document.getElementById('pdf-tbody');
+            pdfTbody.innerHTML = '';
+            
+            shortlisted.sort((a, b) => b.score - a.score).forEach(candidate => {
+                const row = document.createElement('tr');
+                
+                // ID
+                const idCell = document.createElement('td');
+                idCell.textContent = candidate.id;
+                row.appendChild(idCell);
+                
+                // Name
+                const nameCell = document.createElement('td');
+                nameCell.textContent = candidate.name || 'Name not provided';
+                row.appendChild(nameCell);
+                
+                // Contact
+                const contactCell = document.createElement('td');
+                let contactInfo = '';
+                if (candidate.email) contactInfo += candidate.email;
+                if (candidate.phone) {
+                    if (contactInfo) contactInfo += ', ';
+                    contactInfo += candidate.phone;
+                }
+                contactCell.textContent = contactInfo || 'No contact information';
+                row.appendChild(contactCell);
+                
+                // Current Employer
+                const employerCell = document.createElement('td');
+                employerCell.textContent = candidate.currentEmployer || 'Not specified';
+                row.appendChild(employerCell);
+                
+                // Status
+                const statusCell = document.createElement('td');
+                statusCell.textContent = candidate.status || 'Initial Review';
+                row.appendChild(statusCell);
+                
+                // Qualifications
+                const qualCell = document.createElement('td');
+                const qualList = [];
+                
+                if (candidate.qualifications.registration) qualList.push('GPhC Registration');
+                if (candidate.qualifications.mpharm) qualList.push('MPharm');
+                if (candidate.qualifications.ospap) qualList.push('OSPAP');
+                if (candidate.qualifications.ip) qualList.push('Independent Prescriber');
+                if (candidate.qualifications.cppe) qualList.push('CPPE Completed');
+                if (candidate.qualifications.rps) qualList.push('RPS Member');
+                
+                qualCell.textContent = qualList.join(', ');
+                row.appendChild(qualCell);
+                
+                // Experience
+                const expCell = document.createElement('td');
+                const expTypes = [];
+                
+                if (candidate.experience.primaryCare) expTypes.push('Primary Care');
+                if (candidate.experience.community) expTypes.push('Community');
+                if (candidate.experience.hospital) expTypes.push('Hospital');
+                
+                expCell.textContent = `${candidate.experience.years} years (${expTypes.join(', ')})`;
+                row.appendChild(expCell);
+                
+                // Skills
+                const skillsCell = document.createElement('td');
+                skillsCell.textContent = candidate.skills.join(', ');
+                row.appendChild(skillsCell);
+                
+                // Score
+                const scoreCell = document.createElement('td');
+                scoreCell.textContent = candidate.score;
+                row.appendChild(scoreCell);
+                
+                // Notes
+                const notesCell = document.createElement('td');
+                notesCell.textContent = candidate.notes;
+                row.appendChild(notesCell);
+                
+                pdfTbody.appendChild(row);
+            });
+            
+            // Generate PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            
+            // First, use html2canvas to capture the export div
+            html2canvas(document.getElementById('pdfExport')).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const imgProps = doc.getImageProperties(imgData);
+                const pdfWidth = doc.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                
+                doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                doc.save('shortlisted_candidates.pdf');
+            });
+        }
+
+        function saveData() {
+            const data = {
+                candidates: candidates,
+                criteriaWeights: criteriaWeights,
+                filterCriteria: filterCriteria
+            };
+            
+            const dataStr = JSON.stringify(data);
+            localStorage.setItem('pharmacistRecruitmentData', dataStr);
+            
+            alert('Data saved successfully!');
+        }
+
+        function loadData() {
+            const dataStr = localStorage.getItem('pharmacistRecruitmentData');
+            
+            if (!dataStr) {
+                alert('No saved data found.');
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(dataStr);
+                
+                candidates = data.candidates || candidates;
+                criteriaWeights = data.criteriaWeights || criteriaWeights;
+                filterCriteria = data.filterCriteria || filterCriteria;
+                
+                initializeWeightInputs();
+                initializeFilterInputs();
+                updateScores();
+                renderCandidates();
+                
+                alert('Data loaded successfully!');
+            } catch (error) {
+                alert('Error loading data: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
